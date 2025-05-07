@@ -9,5 +9,9 @@ package ca_2techcompany;
  * @author Administrator
  */
 public enum MenuOption {
-//asdfgh    
+ ADD_EMPLOYEE,
+    SORT_EMPLOYEES,
+    SEARCH_EMPLOYEE,
+    GENERATE_RANDOM_EMPLOYEES,
+    EXIT   
 }
