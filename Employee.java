@@ -12,31 +12,38 @@ package ca_2techcompany;
  * @author Administrator
  */
 public class Employee  {
-    private String name;
+   private int id;
+    private String firstName;
+    private String lastName;
+    private String email;
+    private String gender;
     private ManagerType managerType;
     private Department department;
 
-    public Employee(String name, ManagerType managerType, Department department) {
-        this.name = name;
+    /**
+     * Constructor for Employee class.
+     */
+    public Employee(int id, String firstName, String lastName, String email, String gender, ManagerType managerType, Department department) {
+        this.id = id;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.email = email;
+        this.gender = gender;
         this.managerType = managerType;
         this.department = department;
     }
 
-    public String getName() {
-        return name;
-    }
-public ManagerType getManagerType() {
-        return managerType;
-    }
-
-    public Department getDepartment() {
-        return department;
+    /**
+     * Converts employee data to CSV format.
+     */
+    public String toCSV() {
+        return id + "," + firstName + "," + lastName + "," + email + "," + gender + "," + managerType + "," + department;
     }
 
     @Override
     public String toString() {
-        return "Name: " + name + " | Manager Type: " + managerType + " | Department: " + department;
-    
+        return "ID: " + id + ", Name: " + firstName + " " + lastName + ", Email: " + email + ", Gender: " + gender +
+               ", Manager: " + managerType + ", Department: " + department;
     }
 }
     
