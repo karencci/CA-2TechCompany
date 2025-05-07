@@ -95,32 +95,80 @@ public class CA_2TechCompany {
     }
 
     private static void addEmployee() {
+     String name = "";
+    boolean validName = false;
+
+    // Validate employee name input
+    while (!validName) {
         System.out.print("Enter Employee Name (letters only): ");
-        String name = scanner.nextLine().trim();
+        name = scanner.nextLine().trim();
 
-        while (!name.matches("^[A-Za-z\\s]+$")) {
-            System.out.println("Invalid input. Please enter letters only.");
-            System.out.print("Enter Employee Name (letters only): ");
-            name = scanner.nextLine().trim();
+        if (name.matches("^[A-Za-z\\s]+$")) {
+            validName = true;
+        } else {
+            System.out.println("Invalid name. Please enter letters only. No numbers or symbols.");
         }
-
-        System.out.println("Select Manager Type:");
-        for (ManagerType type : ManagerType.values()) {
-            System.out.println((type.ordinal() + 1) + ". " + type);
-        }
-        int managerIndex = getUserChoice();
-        ManagerType managerType = ManagerType.values()[managerIndex - 1];
-
-        System.out.println("Select Department:");
-        for (Department dept : Department.values()) {
-            System.out.println((dept.ordinal() + 1) + ". " + dept);
-        }
-        int deptIndex = getUserChoice();
-        Department department = Department.values()[deptIndex - 1];
-
-        employees.add(new Employee(name, managerType, department));
-        System.out.println("Employee added successfully!");
     }
+
+    ManagerType managerType = null;
+    boolean validManager = false;
+
+    // Validate manager type input
+    while (!validManager) {
+        try {
+            System.out.println("Select Manager Type:");
+            for (ManagerType type : ManagerType.values()) {
+                System.out.println((type.ordinal() + 1) + ". " + type);
+            }
+            System.out.print("Choose a Manager Type (1 - " + ManagerType.values().length + "): ");
+            int managerIndex = scanner.nextInt();
+            scanner.nextLine();  // Consume newline
+
+            if (managerIndex >= 1 && managerIndex <= ManagerType.values().length) {
+                managerType = ManagerType.values()[managerIndex - 1];
+                validManager = true;
+            } else {
+                System.out.println("Invalid selection. Please choose a valid Manager Type.");
+            }
+
+        } catch (InputMismatchException e) {
+            System.out.println("Invalid input. Please enter a number.");
+            scanner.nextLine(); // Clear invalid input
+        }
+    }
+
+    Department department = null;
+    boolean validDepartment = false;
+
+    // Validate department input
+    while (!validDepartment) {
+        try {
+            System.out.println("Select Department:");
+            for (Department dept : Department.values()) {
+                System.out.println((dept.ordinal() + 1) + ". " + dept);
+            }
+            System.out.print("Choose a Department (1 - " + Department.values().length + "): ");
+            int deptIndex = scanner.nextInt();
+            scanner.nextLine();  // Consume newline
+
+            if (deptIndex >= 1 && deptIndex <= Department.values().length) {
+                department = Department.values()[deptIndex - 1];
+                validDepartment = true;
+            } else {
+                System.out.println("Invalid selection. Please choose a valid Department.");
+            }
+
+        } catch (InputMismatchException e) {
+            System.out.println("Invalid input. Please enter a number.");
+            scanner.nextLine(); // Clear invalid input
+        }
+    }
+
+    // Successfully add the employee
+    employees.add(new Employee(name, managerType, department));
+    System.out.println("Employee added successfully: " + name + " - " + managerType + " - " + department);
+}  
+    
 
     private static void viewEmployees() {
         if (employees.isEmpty()) {
