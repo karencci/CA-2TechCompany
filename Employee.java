@@ -25,14 +25,18 @@ public class Employee  {
     public String getName() {
         return name;
     }
+public ManagerType getManagerType() {
+        return managerType;
+    }
+
+    public Department getDepartment() {
+        return department;
+    }
 
     @Override
     public String toString() {
-        return name + " - " + managerType + " - " + department;
-    }
-
-    public int compareTo(Employee other) {
-        return this.name.compareTo(other.name);
+        return "Name: " + name + " | Manager Type: " + managerType + " | Department: " + department;
+    
     }
 }
     
