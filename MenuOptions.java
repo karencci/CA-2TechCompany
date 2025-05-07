@@ -10,8 +10,9 @@ package ca_2techcompany;
  */
 public enum MenuOptions {
     ADD_EMPLOYEE,
-    VIEW_EMPLOYEES,
+    GENERATE_RANDOM_USERS, 
     SEARCH_EMPLOYEE,
-    EXIT   // Ensure that EXIT is defined here
+    SORT_DUMMY_LIST, 
+    EXIT   
     
 }

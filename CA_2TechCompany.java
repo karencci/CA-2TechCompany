@@ -4,21 +4,31 @@
  */
 package ca_2techcompany;
 
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.InputMismatchException;
+import java.util.List;
+import java.util.Random;
 import java.util.Scanner;
 
-/**
- *
- * @author Administrator
- */
+  //Main class for the Employee Management System.
+ 
 public class CA_2TechCompany {
-    private static ArrayList<Employee> employees = new ArrayList<>();
-    private static Scanner scanner = new Scanner(System.in);
-    
-    public static void main(String[] args) {
-       addSampleEmployees();
 
+    private static Scanner scanner = new Scanner(System.in);
+    private static List<User> users = new ArrayList<>();
+
+    // Random data arrays
+    private static final String[] firstNames = {"Abby", "Ada", "Aaron", "Ava", "Alex", "Alice", "John", "Jane", "Michael", "Anna"};
+    private static final String[] lastNames = {"Smith", "Johnson", "Williams", "Brown", "Jones", "Miller", "Davis", "Garcia", "Wilson", "Martinez"};
+    private static final String[] domains = {"gmail.com", "yahoo.com", "outlook.com", "hotmail.com"};
+    private static Random random = new Random();
+
+    /**
+     * Main method to start the program.
+     */
+    public static void main(String[] args) {
         boolean running = true;
 
         while (running) {
@@ -32,36 +42,36 @@ public class CA_2TechCompany {
                     case ADD_EMPLOYEE:
                         addEmployee();
                         break;
-                    case VIEW_EMPLOYEES:
-                        viewEmployees();
+
+                    case GENERATE_RANDOM_USERS:
+                        generateRandomUsers();
                         break;
+
                     case SEARCH_EMPLOYEE:
                         searchEmployee();
                         break;
+
+                    case SORT_DUMMY_LIST:
+                        sortDummyList();
+                        break;
+
                     case EXIT:
                         running = false;
                         System.out.println("Exiting program...");
                         break;
+
+                    default:
+                        System.out.println("Invalid option. Please try again.");
                 }
             } else {
-                System.out.println("Invalid option. Please choose a number between 1 and " + MenuOptions.values().length);
+                System.out.println("Invalid option. Please enter a number between 1 and " + MenuOptions.values().length);
             }
         }
     }
 
     /**
-     * Adds a predefined list of 5 employees to the system.
+     * Displays the menu options.
      */
-    private static void addSampleEmployees() {
-        employees.add(new Employee("Maria Henney", ManagerType.HEAD_MANAGER, Department.HR));
-        employees.add(new Employee("Jane Smith", ManagerType.ASSISTANT_MANAGER, Department.CUSTOMER_SERVICE));
-        employees.add(new Employee("Michael Swim", ManagerType.TEAM_LEAD, Department.TECHNICAL_SUPPORT));
-        employees.add(new Employee("Anna Tylor", ManagerType.ASSISTANT_MANAGER, Department.HR));
-        employees.add(new Employee("Karen McDonall", ManagerType.TEAM_LEAD, Department.TECHNICAL_SUPPORT));
-
-        System.out.println("Sample employees added successfully.");
-    }
-
     private static void displayMenu() {
         System.out.println("\nMenu Options:");
         for (MenuOptions option : MenuOptions.values()) {
@@ -70,6 +80,9 @@ public class CA_2TechCompany {
         System.out.print("Choose an option: ");
     }
 
+    /**
+     * Gets user choice with input validation.
+     */
     private static int getUserChoice() {
         int choice = -1;
         boolean validInput = false;
@@ -82,138 +95,181 @@ public class CA_2TechCompany {
                 if (choice >= 1 && choice <= MenuOptions.values().length) {
                     validInput = true;
                 } else {
-                    System.out.println("Please enter a valid option between 1 and " + MenuOptions.values().length);
+                    System.out.println("Please enter a valid option.");
                 }
-
             } catch (InputMismatchException e) {
                 System.out.println("Invalid input. Please enter a number.");
                 scanner.nextLine(); // Clear invalid input
             }
         }
-
         return choice;
     }
 
-    private static void addEmployee() {
-     String name = "";
-    boolean validName = false;
+    /**
+     * Generates random users and saves them to a CSV file.
+     */
+    private static void generateRandomUsers() {
+        System.out.print("Enter the number of random users to generate: ");
+        int numberOfUsers = getUserChoice();
 
-    // Validate employee name input
-    while (!validName) {
-        System.out.print("Enter Employee Name (letters only): ");
-        name = scanner.nextLine().trim();
+        users = generateUserList(numberOfUsers);
+        writeUsersToCSV(users, "random_users.csv");
 
-        if (name.matches("^[A-Za-z\\s]+$")) {
-            validName = true;
-        } else {
-            System.out.println("Invalid name. Please enter letters only. No numbers or symbols.");
-        }
-    }
-
-    ManagerType managerType = null;
-    boolean validManager = false;
-
-    // Validate manager type input
-    while (!validManager) {
-        try {
-            System.out.println("Select Manager Type:");
-            for (ManagerType type : ManagerType.values()) {
-                System.out.println((type.ordinal() + 1) + ". " + type);
-            }
-            System.out.print("Choose a Manager Type (1 - " + ManagerType.values().length + "): ");
-            int managerIndex = scanner.nextInt();
-            scanner.nextLine();  // Consume newline
-
-            if (managerIndex >= 1 && managerIndex <= ManagerType.values().length) {
-                managerType = ManagerType.values()[managerIndex - 1];
-                validManager = true;
-            } else {
-                System.out.println("Invalid selection. Please choose a valid Manager Type.");
-            }
-
-        } catch (InputMismatchException e) {
-            System.out.println("Invalid input. Please enter a number.");
-            scanner.nextLine(); // Clear invalid input
-        }
-    }
-
-    Department department = null;
-    boolean validDepartment = false;
-
-    // Validate department input
-    while (!validDepartment) {
-        try {
-            System.out.println("Select Department:");
-            for (Department dept : Department.values()) {
-                System.out.println((dept.ordinal() + 1) + ". " + dept);
-            }
-            System.out.print("Choose a Department (1 - " + Department.values().length + "): ");
-            int deptIndex = scanner.nextInt();
-            scanner.nextLine();  // Consume newline
-
-            if (deptIndex >= 1 && deptIndex <= Department.values().length) {
-                department = Department.values()[deptIndex - 1];
-                validDepartment = true;
-            } else {
-                System.out.println("Invalid selection. Please choose a valid Department.");
-            }
-
-        } catch (InputMismatchException e) {
-            System.out.println("Invalid input. Please enter a number.");
-            scanner.nextLine(); // Clear invalid input
-        }
-    }
-
-    // Successfully add the employee
-    employees.add(new Employee(name, managerType, department));
-    System.out.println("Employee added successfully: " + name + " - " + managerType + " - " + department);
-}  
-    
-
-    private static void viewEmployees() {
-        if (employees.isEmpty()) {
-            System.out.println("No employees available.");
-        } else {
-            System.out.println("\nEmployee List:");
-            for (Employee e : employees) {
-                System.out.println(e);
-            }
+        System.out.println("\nGenerated Random Users:");
+        for (User user : users) {
+            System.out.println(user);
         }
     }
 
     /**
-     * Method to search for an employee by name.
+     * Generates a list of random users.
+     */
+    private static List<User> generateUserList(int numberOfUsers) {
+        List<User> userList = new ArrayList<>();
+        for (int i = 0; i < numberOfUsers; i++) {
+            userList.add(generateRandomUser());
+        }
+        return userList;
+    }
+
+    /**
+     * Generates a single random user.
+     */
+    private static User generateRandomUser() {
+        int id = 100 + random.nextInt(900);
+        String firstName = firstNames[random.nextInt(firstNames.length)];
+        String lastName = lastNames[random.nextInt(lastNames.length)];
+        String email = (firstName.charAt(0) + lastName + random.nextInt(100) + "@" + domains[random.nextInt(domains.length)]).toLowerCase();
+        String gender = random.nextBoolean() ? "Male" : "Female";
+        return new User(id, firstName, lastName, email, gender);
+    }
+
+    /**
+     * Writes the generated users to a CSV file.
+     */
+    private static void writeUsersToCSV(List<User> users, String filename) {
+        try (FileWriter writer = new FileWriter(filename)) {
+            writer.write("ID,First Name,Last Name,Email,Gender\n");
+            for (User user : users) {
+                writer.write(user.toCSV() + "\n");
+            }
+            System.out.println("Data successfully written to " + filename);
+        } catch (IOException e) {
+            System.out.println("An error occurred while writing to the file.");
+        }
+    }
+
+    /**
+     * Dummy method for adding employee.
+     */
+    private static void addEmployee() {
+     System.out.print("Enter Employee First Name: ");
+    String firstName = scanner.nextLine().trim();
+
+    while (!firstName.matches("^[A-Za-z]+$")) {
+        System.out.println("Invalid name. Please enter letters only.");
+        System.out.print("Enter Employee First Name: ");
+        firstName = scanner.nextLine().trim();
+    }
+
+    System.out.print("Enter Employee Last Name: ");
+    String lastName = scanner.nextLine().trim();
+
+    while (!lastName.matches("^[A-Za-z]+$")) {
+        System.out.println("Invalid name. Please enter letters only.");
+        System.out.print("Enter Employee Last Name: ");
+        lastName = scanner.nextLine().trim();
+    }
+
+    System.out.print("Enter Employee Email: ");
+    String email = scanner.nextLine().trim();
+
+    while (!email.matches("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Z|a-z]{2,}$")) {
+        System.out.println("Invalid email format. Try again.");
+        System.out.print("Enter Employee Email: ");
+        email = scanner.nextLine().trim();
+    }
+
+    String gender;
+    while (true) {
+        System.out.print("Enter Gender (Male/Female): ");
+        gender = scanner.nextLine().trim();
+        if (gender.equalsIgnoreCase("Male") || gender.equalsIgnoreCase("Female")) {
+            break;
+        }
+        System.out.println("Invalid gender. Please enter 'Male' or 'Female'.");
+    }
+
+    int id = 100 + random.nextInt(900);
+    User newUser = new User(id, firstName, lastName, email, gender);
+    users.add(newUser);
+
+    System.out.println("Employee added successfully:\n" + newUser);
+   }
+
+    /**
+     * Dummy method for sorting dummy list.
+     */
+    private static void sortDummyList() {
+        System.out.println("Sort Dummy List functionality is under development.");
+    }
+
+    /**
+     * Dummy method for searching employees.
      */
     private static void searchEmployee() {
-       System.out.print("Enter Employee Name to Search (letters only): ");
+       System.out.print("Enter Employee Name to Search: ");
     String searchName = scanner.nextLine().trim();
 
-    // Validate input to allow only alphabetic characters and spaces
-    while (!searchName.matches("^[A-Za-z\\s]+$")) {
-        System.out.println("Invalid input. Please enter letters only, no numbers or symbols.");
-        System.out.print("Enter Employee Name to Search (letters only): ");
+    while (!searchName.matches("^[A-Za-z]+$")) {
+        System.out.println("Invalid input. Please enter letters only.");
+        System.out.print("Enter Employee Name to Search: ");
         searchName = scanner.nextLine().trim();
     }
 
     boolean found = false;
-    System.out.println("\nSearch Results:");
 
-    for (Employee e : employees) {
-        if (e.getName().toLowerCase().contains(searchName.toLowerCase())) {
-            System.out.println(e);
+    System.out.println("\nSearch Results:");
+    for (User user : users) {
+        if (user.firstName.equalsIgnoreCase(searchName) || user.lastName.equalsIgnoreCase(searchName)) {
+            System.out.println(user);
             found = true;
         }
     }
 
     if (!found) {
-        System.out.println("No employee found with the name containing: " + searchName);
+        System.out.println("No employee found with the name: " + searchName); 
     }
 }
 
-        boolean found = false;
-        
+/**
+ * User class representing a random user.
+ */
+class User {
+    int id;
+    String firstName;
+    String lastName;
+    String email;
+    String gender;
 
+    public User(int id, String firstName, String lastName, String email, String gender) {
+        this.id = id;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.email = email;
+        this.gender = gender;
+    }
+
+    public String toCSV() {
+        return id + "," + firstName + "," + lastName + "," + email + "," + gender;
+    }
+
+    @Override
+    public String toString() {
+        return "ID: " + id + ", Name: " + firstName + " " + lastName + ", Email: " + email + ", Gender: " + gender;
+    }
 }
+
     
        
       
