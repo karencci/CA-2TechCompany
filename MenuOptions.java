@@ -9,9 +9,9 @@ package ca_2techcompany;
  * @author Administrator
  */
 public enum MenuOptions {
-      ADD_EMPLOYEE,
+    ADD_EMPLOYEE,
     VIEW_EMPLOYEES,
-    QUERY_EMPLOYEE,
-    EXIT
+    SEARCH_EMPLOYEE,
+    EXIT   // Ensure that EXIT is defined here
     
 }

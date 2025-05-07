@@ -17,9 +17,11 @@ public class CA_2TechCompany {
     private static Scanner scanner = new Scanner(System.in);
     
     public static void main(String[] args) {
+       addSampleEmployees();
+
         boolean running = true;
-        
-          while (running) {
+
+        while (running) {
             displayMenu();
             int choice = getUserChoice();
 
@@ -33,8 +35,8 @@ public class CA_2TechCompany {
                     case VIEW_EMPLOYEES:
                         viewEmployees();
                         break;
-                    case QUERY_EMPLOYEE:
-                        queryEmployee();
+                    case SEARCH_EMPLOYEE:
+                        searchEmployee();
                         break;
                     case EXIT:
                         running = false;
@@ -45,6 +47,19 @@ public class CA_2TechCompany {
                 System.out.println("Invalid option. Please choose a number between 1 and " + MenuOptions.values().length);
             }
         }
+    }
+
+    /**
+     * Adds a predefined list of 5 employees to the system.
+     */
+    private static void addSampleEmployees() {
+        employees.add(new Employee("Maria Henney", ManagerType.HEAD_MANAGER, Department.HR));
+        employees.add(new Employee("Jane Smith", ManagerType.ASSISTANT_MANAGER, Department.CUSTOMER_SERVICE));
+        employees.add(new Employee("Michael Swim", ManagerType.TEAM_LEAD, Department.TECHNICAL_SUPPORT));
+        employees.add(new Employee("Anna Tylor", ManagerType.ASSISTANT_MANAGER, Department.HR));
+        employees.add(new Employee("Karen McDonall", ManagerType.TEAM_LEAD, Department.TECHNICAL_SUPPORT));
+
+        System.out.println("Sample employees added successfully.");
     }
 
     private static void displayMenu() {
@@ -62,17 +77,17 @@ public class CA_2TechCompany {
         while (!validInput) {
             try {
                 choice = scanner.nextInt();
-                scanner.nextLine();  // Consume the newline character
+                scanner.nextLine(); // Consume newline
 
                 if (choice >= 1 && choice <= MenuOptions.values().length) {
                     validInput = true;
                 } else {
-                    System.out.println("Please enter a number between 1 and " + MenuOptions.values().length);
+                    System.out.println("Please enter a valid option between 1 and " + MenuOptions.values().length);
                 }
 
             } catch (InputMismatchException e) {
                 System.out.println("Invalid input. Please enter a number.");
-                scanner.nextLine(); // Clear the invalid input
+                scanner.nextLine(); // Clear invalid input
             }
         }
 
@@ -80,8 +95,14 @@ public class CA_2TechCompany {
     }
 
     private static void addEmployee() {
-        System.out.print("Enter Employee Name: ");
-        String name = scanner.nextLine();
+        System.out.print("Enter Employee Name (letters only): ");
+        String name = scanner.nextLine().trim();
+
+        while (!name.matches("^[A-Za-z\\s]+$")) {
+            System.out.println("Invalid input. Please enter letters only.");
+            System.out.print("Enter Employee Name (letters only): ");
+            name = scanner.nextLine().trim();
+        }
 
         System.out.println("Select Manager Type:");
         for (ManagerType type : ManagerType.values()) {
@@ -112,25 +133,46 @@ public class CA_2TechCompany {
         }
     }
 
-    private static void queryEmployee() {
-        System.out.print("Enter Employee Name to Search: ");
-        String searchName = scanner.nextLine().trim();
+    /**
+     * Method to search for an employee by name.
+     */
+    private static void searchEmployee() {
+       System.out.print("Enter Employee Name to Search (letters only): ");
+    String searchName = scanner.nextLine().trim();
+
+    // Validate input to allow only alphabetic characters and spaces
+    while (!searchName.matches("^[A-Za-z\\s]+$")) {
+        System.out.println("Invalid input. Please enter letters only, no numbers or symbols.");
+        System.out.print("Enter Employee Name to Search (letters only): ");
+        searchName = scanner.nextLine().trim();
+    }
+
+    boolean found = false;
+    System.out.println("\nSearch Results:");
+
+    for (Employee e : employees) {
+        if (e.getName().toLowerCase().contains(searchName.toLowerCase())) {
+            System.out.println(e);
+            found = true;
+        }
+    }
+
+    if (!found) {
+        System.out.println("No employee found with the name containing: " + searchName);
+    }
+}
 
         boolean found = false;
-        for (Employee e : employees) {
-            if (e.getName().equalsIgnoreCase(searchName)) {
-                System.out.println("Employee Found: " + e);
-                found = true;
-            }
-        }
+        
 
-        if (!found) {
-            System.out.println("Employee not found.");
-        }
-   
+}
     
-        } 
-    }
+       
+      
+
+
+
+
 
             
     
