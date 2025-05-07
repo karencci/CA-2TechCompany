@@ -9,6 +9,6 @@ package ca_2techcompany;
  *
  * @author Administrator
  */
-public class Employee {
+public class EmployeeManagment {
     
 }

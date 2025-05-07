@@ -9,5 +9,8 @@ package ca_2techcompany;
  * @author Administrator
  */
 public enum ManagerType {
+     HEAD_MANAGER,
+    ASSISTANT_MANAGER,
+    TEAM_LEAD
     
 }
