@@ -25,7 +25,11 @@ public class Main {
         names = names.subList(0, Math.min(20, names.size()));
         for (String n : names) {
             employees.add(new Employee(n, ManagerType.ASSISTANT_MANAGER, Department.CUSTOMER_SERVICE));
-        }
+            employees.add(new Employee(
+                n,
+                ManagerType.ASSISTANT_MANAGER,
+                Department.CUSTOMER_SERVICE
+ ));
         //Menu loop
         while (true) {
             MenuOption opt = promptMenu();
@@ -50,6 +54,7 @@ public class Main {
         throw new IllegalStateException("Unexpected value: " + opt);
             }
         }
+    }
     }
 
     private static List<String> loadNames() {
@@ -90,8 +95,7 @@ public class Main {
                 if (opt != null) {
                     return opt;
                 }
-            } catch (NumberFormatException ignored) {
-            }
+            } catch (NumberFormatException ignored) {}
             System.out.println("Invalid choice. Please try again.");
         }
     }
@@ -106,12 +110,13 @@ public class Main {
 
     private static void searchByName() {
         System.out.print("Enter name to search: ");
-        String key = SC.nextLine();
+        String key = SC.nextLine().trim();
         if (key.isEmpty()) {
             System.out.println("Search term cannot be empty.");
             return;
         }
         String keyLower = key.toLowerCase();
+        
 
         if (employees.isEmpty()) {
             System.out.println("No employees loaded to search.");
@@ -119,32 +124,73 @@ public class Main {
         }
         employees.sort(Comparator.comparing(Employee::getName, String.CASE_INSENSITIVE_ORDER));
 
-        int idx = binarySearchPrefix(employees, keyLower);
-        if (idx < 0) {
-            System.out.printf("No matching record found for \"%s\".%n", key);
-            return;
-        }
-
-        // Walk backwards to the first matching prefix
-        int first = idx;
-        while (first > 0
-                && employees.get(first - 1).getName().toLowerCase().startsWith(keyLower)) {
-            first--;
-        }
-
-        // From there, print every continuous prefix match
-        for (int i = first; i < employees.size(); i++) {
-            String nameLower = employees.get(i).getName().toLowerCase();
-            if (!nameLower.startsWith(keyLower)) break;
-            System.out.println(employees.get(i).toString());
+        boolean found = false;
+            for (Employee e : employees) {
+                String fullName = e.getName();
+                // split the name into first/middle/last
+                String[] parts = fullName.trim().split("\\s+");
+                // check each part for a prefix match
+                for (String part : parts) {
+                    if (part.toLowerCase().startsWith(keyLower)) {
+                        System.out.println(e.toString());
+                        found = true;
+                        break;
+                    }
+                }   
+              }
+              if (!found) {
+                System.out.printf("No matching record found for \"%s\".%n", key);
         }
     }
+//        int idx = binarySearchPrefix(employees, keyLower);
+//        if (idx < 0) {
+//            System.out.printf("No matching record found for \"%s\".%n", key);
+//            return;
+//        }
+//
+//        // Walk backwards to the first matching prefix
+//        int first = idx;
+//        while (first > 0
+//                && employees.get(first - 1).getName().toLowerCase().startsWith(keyLower)) {
+//            first--;
+//        }
+//
+//        // From there, print every continuous prefix match
+//        for (int i = first; i < employees.size(); i++) {
+//            String nameLower = employees.get(i).getName().toLowerCase();
+//            
+//            if (!nameLower.startsWith(keyLower)) break;
+//            System.out.println(employees.get(i).toString());
+        
+       private static int binarySearchPrefix(List<Employee> employees, String keyLower) {
+//private static int binarySearchPrefix(List<Employee> employees, String keyLower) {
+        int lo = 0;
+        int hi = employees.size() - 1;
 
-    private static int binarySearchPrefix(List<Employee> employees, String keyLower) {
-        return 0;
+        while (lo <= hi) {
+            int mid = lo + (hi - lo) / 2;
+            String nameLower = employees.get(mid).getName().toLowerCase();
+
+            if (nameLower.startsWith(keyLower)) {
+                return mid;
+            }
+
+            // Compare only the prefix up to keyLower.length()
+            String prefix = nameLower.length() >= keyLower.length()
+                ? nameLower.substring(0, keyLower.length())
+                : nameLower;
+            int cmp = prefix.compareTo(keyLower);
+
+            if (cmp < 0) {
+                lo = mid + 1;
+            } else {
+                hi = mid - 1;
+            }
     }
 
-
+    return -1;
+}
+    
     private static void addEmployee() {
         System.out.print("Enter new employee name: ");
         String name = SC.nextLine().trim();
@@ -157,6 +203,7 @@ public class Main {
         employees.add(new Employee(name, mt, dp));
         System.out.printf("\"%s\" added as \"%s\" to \"%s\".%n", name, mt, dp);
     }
+    
 
     private static <T extends Enum<T>> T promptEnum(String label, T[] vals) {
         while (true) {
