@@ -9,10 +9,18 @@ package ca_2techcompany;
  * @author Administrator
  */
 public enum MenuOptions {
-    ADD_EMPLOYEE,
-    GENERATE_RANDOM_USERS, 
-    SEARCH_EMPLOYEE,
-    SORT_DUMMY_LIST, 
-    EXIT   
-    
+    SORT,
+    SEARCH,
+    RANDOM_USERS,
+    ADD_RECORDS,
+    EXIT;
+
+    public static void displayMenu() {
+        System.out.println("1. SORT");
+        System.out.println("2. SEARCH");
+        System.out.println("3. RANDOM USERS");
+        System.out.println("4. ADD RECORDS");
+        System.out.println("5. EXIT");
+        
+}
 }

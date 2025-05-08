@@ -9,9 +9,8 @@ package ca_2techcompany;
  * @author Administrator
  */
 public enum Department {
-    HR,
-    FINANCE,
+    CUSTOMER_SERVICE,
     TECHNICAL_SUPPORT,
-    CUSTOMER_SERVICE
+    HR;
     
 }

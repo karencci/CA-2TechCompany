@@ -11,6 +11,6 @@ package ca_2techcompany;
 public enum ManagerType {
     HEAD_MANAGER,
     ASSISTANT_MANAGER,
-    TEAM_LEAD
+    TEAM_LEAD;
     
 }
