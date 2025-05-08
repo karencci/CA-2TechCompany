@@ -5,78 +5,233 @@
 package ca_2techcompany;
 //agregar una funcion al maincode (filereader ) 
 
-import java.io.FileWriter;
+
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.InputMismatchException;
-import java.util.List;
-import java.util.Scanner;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.*;
+
 
 public class Main {
-     public static void main(String[] args) {
-        Scanner scanner = new Scanner(System.in);
-        List<Employee> employees = DataInput.readFromFile("Applicants_Form.txt");
+    private static final Scanner SC = new Scanner(System.in);
+    private static final List<Employee> employees = new ArrayList<>();
 
-         if (!employees.isEmpty()) {
-            System.out.println("Loaded Employees:");
-            for (Employee emp : employees) {
-                System.out.println(emp);
-            }
-        } else {
-            System.out.println("No data loaded.");
-            
-        while (true) {
-            MenuOptions.displayMenu();
-            System.out.print("Select an option: ");
-            int choice = scanner.nextInt();
-            scanner.nextLine();
-
-            switch (choice) {
-                case 1:
-                    employees.sort(Comparator.comparing(Employee::getName));
-                    System.out.println("Sorted List (First 20):");
-                    for (int i = 0; i < Math.min(20, employees.size()); i++) {
-                        System.out.println(employees.get(i));
-                    }
-                    break;
-                case 2:
-                    System.out.print("Enter name to search: ");
-                    String name = scanner.nextLine();
-                    int index = BinarySearch.search(employees, name, 0, employees.size() - 1);
-                    if (index != -1) {
-                        System.out.println("Found: " + employees.get(index));
-                    } else {
-                        System.out.println("Not found!");
-                    }
-                    break;
-                case 3:
-                    System.out.println("Generating Random Users...");
-                    Employee randomEmployee = new Employee("Random Name", ManagerType.ASSISTANT_MANAGER, Department.HR);
-                    employees.add(randomEmployee);
-                    System.out.println("Added: " + randomEmployee);
-                    break;
-                case 4:
-                    System.out.print("Enter Employee Name: ");
-                    String empName = scanner.nextLine();
-                    System.out.print("Enter Manager Type (1-HEAD_MANAGER, 2-ASSISTANT_MANAGER, 3-TEAM_LEAD): ");
-                    int mgrChoice = scanner.nextInt();
-                    scanner.nextLine();
-                    System.out.print("Enter Department (1-CUSTOMER_SERVICE, 2-TECHNICAL_SUPPORT, 3-HR): ");
-                    int deptChoice = scanner.nextInt();
-                    scanner.nextLine();
-                    employees.add(new Employee(empName, ManagerType.values()[mgrChoice - 1], Department.values()[deptChoice - 1]));
-                    System.out.println("Employee Added Successfully!");
-                    break;
-                case 5:
-                    System.out.println("Exiting...");
-                    return;
-                default:
-                    System.out.println("Invalid Option!");
+    public static void main(String[] args) {
+        //Load and sort names
+        List<String> names = loadNames();
+        names = mergeSort(names);
+        names = names.subList(0, Math.min(20, names.size()));
+        for (String n : names) {
+            employees.add(new Employee(n, ManagerType.ASSISTANT_MANAGER, Department.CUSTOMER_SERVICE));
         }
-     }
+        //Menu loop
+        while (true) {
+            MenuOption opt = promptMenu();
+            switch (opt) {
+                case SORT:
+                    sortAndDisplay();
+                    break;
+                case SEARCH:
+                    searchByName();
+                    break;
+                case ADD:
+                    addEmployee();
+                    break;
+                case GENERATE_RANDOM:
+                    generateRandomEmployees();
+                    break;
+                case EXIT:
+                    System.out.println("Goodbye!");
+                    return;
+                    default:
+        // never happens, but good practice
+        throw new IllegalStateException("Unexpected value: " + opt);
+            }
+        }
     }
-     }
+
+    private static List<String> loadNames() {
+        List<String> list = new ArrayList<>();
+        while (true) {
+            System.out.print("Please enter the filename to read: ");
+            String input = SC.nextLine();
+            // Strip stray quotes
+            String file = input.replace("\"", "").trim();
+
+            try {
+                Path path = Paths.get(file);
+                for (String line : Files.readAllLines(path)) {
+                    if (!line.isBlank()) {
+                        list.add(line.trim());
+                    }
+                }
+                System.out.println("File read successfully!");
+                return list;
+
+            } catch (InvalidPathException ipe) {
+                System.out.println("Invalid filename – please avoid quotes or illegal characters.");
+            } catch (IOException ioe) {
+                System.out.println("Could not read that file. Make sure it exists and is readable.");
+            }
+        }
+    }
+
+    private static MenuOption promptMenu() {
+        while (true) {
+            System.out.println("\nSelect an option:");
+            for (MenuOption m : MenuOption.values()) {
+                System.out.printf(" %d. %s%n", m.getCode(), m.name());
+            }
+            try {
+                int choice = Integer.parseInt(SC.nextLine());
+                MenuOption opt = MenuOption.fromInt(choice);
+                if (opt != null) {
+                    return opt;
+                }
+            } catch (NumberFormatException ignored) {
+            }
+            System.out.println("Invalid choice. Please try again.");
+        }
+    }
+
+    private static void sortAndDisplay() {
+        System.out.println("\n-- SORTED EMPLOYEES --");
+        employees.sort(Comparator.comparing(Employee::getName));
+        employees.stream()
+                .limit(20)
+                .forEach(e -> System.out.println(e.getName()));
+    }
+
+    private static void searchByName() {
+        System.out.print("Enter name to search: ");
+        String key = SC.nextLine();
+        if (key.isEmpty()) {
+            System.out.println("Search term cannot be empty.");
+            return;
+        }
+        String keyLower = key.toLowerCase();
+
+        if (employees.isEmpty()) {
+            System.out.println("No employees loaded to search.");
+            return;
+        }
+        employees.sort(Comparator.comparing(Employee::getName, String.CASE_INSENSITIVE_ORDER));
+
+        int idx = binarySearchPrefix(employees, keyLower);
+        if (idx < 0) {
+            System.out.printf("No matching record found for \"%s\".%n", key);
+            return;
+        }
+
+        // Walk backwards to the first matching prefix
+        int first = idx;
+        while (first > 0
+                && employees.get(first - 1).getName().toLowerCase().startsWith(keyLower)) {
+            first--;
+        }
+
+        // From there, print every continuous prefix match
+        for (int i = first; i < employees.size(); i++) {
+            String nameLower = employees.get(i).getName().toLowerCase();
+            if (!nameLower.startsWith(keyLower)) break;
+            System.out.println(employees.get(i).toString());
+        }
+    }
+
+    private static int binarySearchPrefix(List<Employee> employees, String keyLower) {
+        return 0;
+    }
+
+
+    private static void addEmployee() {
+        System.out.print("Enter new employee name: ");
+        String name = SC.nextLine().trim();
+        if (name.isEmpty()) {
+            System.out.println("Name cannot be blank.");
+            return;
+        }
+        ManagerType mt = promptEnum("Manager Type", ManagerType.values());
+        Department dp = promptEnum("Department", Department.values());
+        employees.add(new Employee(name, mt, dp));
+        System.out.printf("\"%s\" added as \"%s\" to \"%s\".%n", name, mt, dp);
+    }
+
+    private static <T extends Enum<T>> T promptEnum(String label, T[] vals) {
+        while (true) {
+            System.out.printf("Select %s:%n", label);
+            for (int i = 0; i < vals.length; i++) {
+                System.out.printf(" %d. %s%n", i + 1, vals[i].name());
+            }
+            try {
+                int c = Integer.parseInt(SC.nextLine());
+                if (c >= 1 && c <= vals.length) {
+                    return vals[c - 1];
+                }
+            } catch (NumberFormatException ignored) {}
+            System.out.println("Invalid. Try again.");
+        }
+    }
+
+    private static void generateRandomEmployees() {
+        System.out.print("How many to generate? ");
+        int n;
+        try {
+            n = Integer.parseInt(SC.nextLine());
+        } catch (NumberFormatException e) {
+            System.out.println("That's not a number.");
+            return;
+        }
+        String[] sampleNames = {
+                "Alice", "Bob", "Charlie", "Diana",
+                "Eve", "Frank", "Grace", "Hank"
+        };
+        Random rnd = new Random();
+        for (int i = 0; i < n; i++) {
+            String name = sampleNames[rnd.nextInt(sampleNames.length)]
+                    + "-" + (rnd.nextInt(900) + 100);
+            ManagerType mt = ManagerType.values()[rnd.nextInt(ManagerType.values().length)];
+            Department dp = Department.values()[rnd.nextInt(Department.values().length)];
+            employees.add(new Employee(name, mt, dp));
+        }
+        System.out.printf("%d random employees added.%n", n);
+    }
+
+    public static List<String> mergeSort(List<String> list) {
+        if (list.size() <= 1) return list;
+        int mid = list.size() / 2;
+        List<String> left = mergeSort(list.subList(0, mid));
+        List<String> right = mergeSort(list.subList(mid, list.size()));
+        return merge(left, right);
+    }
+
+    private static List<String> merge(List<String> a, List<String> b) {
+        List<String> out = new ArrayList<>();
+        int i = 0, j = 0;
+        while (i < a.size() && j < b.size()) {
+            if (a.get(i).compareToIgnoreCase(b.get(j)) <= 0) {
+                out.add(a.get(i++));
+            } else {
+                out.add(b.get(j++));
+            }
+        }
+        while (i < a.size()) out.add(a.get(i++));
+        while (j < b.size()) out.add(b.get(j++));
+        return out;
+    }
+
+    public static int binarySearch(List<String> arr, String key) {
+        int lo = 0, hi = arr.size() - 1;
+        while (lo <= hi) {
+            int mid = (lo + hi) / 2;
+            int cmp = arr.get(mid).compareToIgnoreCase(key);
+            if (cmp == 0) return mid;
+            else if (cmp < 0) lo = mid + 1;
+            else hi = mid - 1;
+        }
+        return -1;
+        }
 }
 
 
