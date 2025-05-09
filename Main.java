@@ -25,11 +25,7 @@ public class Main {
         names = names.subList(0, Math.min(20, names.size()));
         for (String n : names) {
             employees.add(new Employee(n, ManagerType.ASSISTANT_MANAGER, Department.CUSTOMER_SERVICE));
-            employees.add(new Employee(
-                n,
-                ManagerType.ASSISTANT_MANAGER,
-                Department.CUSTOMER_SERVICE
- ));
+           
         //Menu loop
         while (true) {
             MenuOption opt = promptMenu();
@@ -47,20 +43,18 @@ public class Main {
                     generateRandomEmployees();
                     break;
                 case EXIT:
-                    System.out.println("Goodbye!");
+                    System.out.println("Thank you, see you later!");
                     return;
                     default:
-        // never happens, but good practice
-        throw new IllegalStateException("Unexpected value: " + opt);
+                        throw new IllegalStateException("Unexpected value: " + opt);
             }
         }
     }
     }
-
     private static List<String> loadNames() {
         List<String> list = new ArrayList<>();
         while (true) {
-            System.out.print("Please enter the filename to read: ");
+            System.out.print("Hello, please enter the filename to read: ");
             String input = SC.nextLine();
             // Strip stray quotes
             String file = input.replace("\"", "").trim();
@@ -72,20 +66,20 @@ public class Main {
                         list.add(line.trim());
                     }
                 }
-                System.out.println("File read successfully!");
+                System.out.println("Thank you, your file has been read successfully!");
                 return list;
 
             } catch (InvalidPathException ipe) {
-                System.out.println("Invalid filename – please avoid quotes or illegal characters.");
+                System.out.println("Sorry your file is not correct.");
             } catch (IOException ioe) {
-                System.out.println("Could not read that file. Make sure it exists and is readable.");
+                System.out.println("Sorry, Could not read that file. Please insert a correct file.");
             }
         }
     }
 
     private static MenuOption promptMenu() {
         while (true) {
-            System.out.println("\nSelect an option:");
+            System.out.println("\n Please select an option:");
             for (MenuOption m : MenuOption.values()) {
                 System.out.printf(" %d. %s%n", m.getCode(), m.name());
             }
@@ -95,104 +89,68 @@ public class Main {
                 if (opt != null) {
                     return opt;
                 }
-            } catch (NumberFormatException ignored) {}
-            System.out.println("Invalid choice. Please try again.");
+            } catch (NumberFormatException ignored) {
+            }
+            System.out.println("Sorry your choice isn't valid. Please try again.");
         }
     }
 
     private static void sortAndDisplay() {
-        System.out.println("\n-- SORTED EMPLOYEES --");
+        System.out.println("\n Ordered team ");
         employees.sort(Comparator.comparing(Employee::getName));
-        employees.stream()
-                .limit(20)
-                .forEach(e -> System.out.println(e.getName()));
+        employees.stream().limit(20)
+                .forEach(e -> System.out.println(e.toString()));
     }
 
     private static void searchByName() {
-        System.out.print("Enter name to search: ");
-        String key = SC.nextLine().trim();
-        if (key.isEmpty()) {
-            System.out.println("Search term cannot be empty.");
+        System.out.print("Please enter name to search: ");
+        String key = SC.nextLine();
+        
+         if (key.isEmpty()) {
+            System.out.println("Please enter a valid name.");
             return;
         }
         String keyLower = key.toLowerCase();
         
-
         if (employees.isEmpty()) {
-            System.out.println("No employees loaded to search.");
+            System.out.println("The employee list is empty.");
             return;
         }
+    // Sort the employees by name (case insensitive) before searching
         employees.sort(Comparator.comparing(Employee::getName, String.CASE_INSENSITIVE_ORDER));
+    //Convert to a list for easier indexing
+   
+    // Perform binary search for the first occurrence of the prefix
+    int idx = binarySearchPrefix(employees, keyLower);
 
-        boolean found = false;
-            for (Employee e : employees) {
-                String fullName = e.getName();
-                // split the name into first/middle/last
-                String[] parts = fullName.trim().split("\\s+");
-                // check each part for a prefix match
-                for (String part : parts) {
-                    if (part.toLowerCase().startsWith(keyLower)) {
-                        System.out.println(e.toString());
-                        found = true;
-                        break;
-                    }
-                }   
-              }
-              if (!found) {
-                System.out.printf("No matching record found for \"%s\".%n", key);
+    if (idx <0) {
+        System.out.println("No matching records found.");
+        return;
         }
+        int first =idx;
+        while (first > 0
+                && employees.get(first - 1).getName().toLowerCase().startsWith(keyLower)) {
+            first--;
+        }
+
+        // From there, print every continuous prefix match
+        for (int i = first; i < employees.size(); i++) {
+            String nameLower = employees.get(i).getName().toLowerCase();
+            if (!nameLower.startsWith(keyLower)) break;
+            System.out.println(employees.get(i).toString());
+      
     }
-//        int idx = binarySearchPrefix(employees, keyLower);
-//        if (idx < 0) {
-//            System.out.printf("No matching record found for \"%s\".%n", key);
-//            return;
-//        }
-//
-//        // Walk backwards to the first matching prefix
-//        int first = idx;
-//        while (first > 0
-//                && employees.get(first - 1).getName().toLowerCase().startsWith(keyLower)) {
-//            first--;
-//        }
-//
-//        // From there, print every continuous prefix match
-//        for (int i = first; i < employees.size(); i++) {
-//            String nameLower = employees.get(i).getName().toLowerCase();
-//            
-//            if (!nameLower.startsWith(keyLower)) break;
-//            System.out.println(employees.get(i).toString());
-        
+    }   
        private static int binarySearchPrefix(List<Employee> employees, String keyLower) {
-//private static int binarySearchPrefix(List<Employee> employees, String keyLower) {
-        int lo = 0;
-        int hi = employees.size() - 1;
-
-        while (lo <= hi) {
-            int mid = lo + (hi - lo) / 2;
-            String nameLower = employees.get(mid).getName().toLowerCase();
-
-            if (nameLower.startsWith(keyLower)) {
-                return mid;
-            }
-
-            // Compare only the prefix up to keyLower.length()
-            String prefix = nameLower.length() >= keyLower.length()
-                ? nameLower.substring(0, keyLower.length())
-                : nameLower;
-            int cmp = prefix.compareTo(keyLower);
-
-            if (cmp < 0) {
-                lo = mid + 1;
-            } else {
-                hi = mid - 1;
-            }
-    }
-
-    return -1;
-}
+//       
+            return 0;
+        }
     
+
+    
+
     private static void addEmployee() {
-        System.out.print("Enter new employee name: ");
+        System.out.print("Please enter new employee name: ");
         String name = SC.nextLine().trim();
         if (name.isEmpty()) {
             System.out.println("Name cannot be blank.");
@@ -232,7 +190,8 @@ public class Main {
         }
         String[] sampleNames = {
                 "Alice", "Bob", "Charlie", "Diana",
-                "Eve", "Frank", "Grace", "Hank"
+                "Eve", "Frank", "Grace", "Hank","Isla",
+                "Finn"
         };
         Random rnd = new Random();
         for (int i = 0; i < n; i++) {
